@@ -13,4 +13,8 @@ spring:
     console:
       enabled: true
 
+externalApi:
+  userService:
+    url: localhost:8080
+
 
