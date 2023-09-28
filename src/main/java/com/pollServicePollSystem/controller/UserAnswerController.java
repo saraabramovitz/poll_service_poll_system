@@ -14,9 +14,10 @@ public class UserAnswerController {
     @Autowired
     UserAnswerService userAnswerService;
 
+
     @PostMapping("/saveUserPoll")
-    public void saveUserPoll(@RequestBody UserPoll userPoll) {
-        userAnswerService.saveUserPoll(userPoll);
+    public void saveUserPollAnswer(@RequestBody UserPoll userPoll) {
+        userAnswerService.saveUserPollAnswer(userPoll);
     }
 
     @DeleteMapping("/deleteUserAnswers/{userId}")

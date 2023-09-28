@@ -48,6 +48,12 @@ public class UserAnswerRepositoryImpl implements UserAnswerRepository {
         jdbcTemplate.update(sql, userId);
     }
 
+    @Override
+    public void deletePollAnswersByQuestionId(Long questionId) {
+        String sql = "DELETE FROM " + USER_POLL_ANSWER_TABLE_NAME + " WHERE question_id=?";
+        jdbcTemplate.update(sql, questionId);
+    }
+
     public UserAnswer getUserAnswersByUserId(Long userId, UserAnswer userAnswer){
         Long questionId = userAnswer.getQuestionId();
         String sql = "SELECT * FROM " + USER_POLL_ANSWER_TABLE_NAME + " WHERE user_id=? AND question_id=?";

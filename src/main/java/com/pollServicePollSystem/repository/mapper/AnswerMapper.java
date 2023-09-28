@@ -1,6 +1,5 @@
 package com.pollServicePollSystem.repository.mapper;
 
-import com.pollServicePollSystem.model.Question;
 import com.pollServicePollSystem.model.UserAnswer;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;

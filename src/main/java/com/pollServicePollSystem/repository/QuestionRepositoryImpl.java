@@ -1,11 +1,15 @@
 package com.pollServicePollSystem.repository;
 
 import com.pollServicePollSystem.model.Question;
+import com.pollServicePollSystem.model.QuestionResponse;
 import com.pollServicePollSystem.repository.mapper.QuestionMapper;
+import com.pollServicePollSystem.repository.mapper.QuestionResponseMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
 
 @Repository
 public class QuestionRepositoryImpl implements QuestionRepository{
@@ -14,9 +18,14 @@ public class QuestionRepositoryImpl implements QuestionRepository{
 
     @Autowired
     JdbcTemplate jdbcTemplate;
+    @Autowired
+    QuestionResponseMapper questionResponseMapper;
 
     @Autowired
     QuestionMapper questionMapper;
+
+
+
 
     @Override
     public void createQuestion(Question question) {
@@ -63,4 +72,29 @@ public class QuestionRepositoryImpl implements QuestionRepository{
             return null;
         }
     }
+
+    public List<Question> getAllPollQuestions(){
+        String sql = "SELECT * FROM " + POLL_QUESTION_TABLE_NAME;
+        return jdbcTemplate.query(sql, questionMapper);
+    }
+
+    public Question getQuestionQuestionTitle(String questionTitle){
+        String sql = "SELECT * FROM " + POLL_QUESTION_TABLE_NAME + " WHERE question_title=?";
+        try {
+            return jdbcTemplate.queryForObject(sql, questionMapper, questionTitle);
+        } catch (EmptyResultDataAccessException e) {
+            return null;
+        }
+    }
+
+
+    public String getAnswerByQuestionId(String answer, Long questionId) {
+        String sql = "SELECT " + answer + " FROM " + POLL_QUESTION_TABLE_NAME + " WHERE question_id=?";
+        try {
+            return jdbcTemplate.queryForObject(sql, new Object[]{questionId}, String.class);
+        } catch (EmptyResultDataAccessException e) {
+            return null;
+        }
+    }
+
 }

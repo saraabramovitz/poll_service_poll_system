@@ -10,17 +10,16 @@ import java.sql.SQLException;
 @Component
 public class QuestionMapper implements RowMapper<Question>{
 
-        @Override
-        public Question mapRow(ResultSet rs, int rowNum) throws SQLException {
-            Question question = new Question(
-                    rs.getLong("question_id"),
-                    rs.getString("question_title"),
-                    rs.getString("first_answer_option"),
-                    rs.getString("second_answer_option"),
-                    rs.getString("third_answer_option"),
-                    rs.getString("fourth_answer_option")
-            );
-            return question;
-        }
+    @Override
+    public Question mapRow(ResultSet rs, int rowNum) throws SQLException {
+        Question question = new Question(
+                rs.getLong("question_id"),
+                rs.getString("question_title"),
+                rs.getString("first_answer_option"),
+                rs.getString("second_answer_option"),
+                rs.getString("third_answer_option"),
+                rs.getString("fourth_answer_option")
+        );
+        return question;
+    }
 }
-

@@ -2,10 +2,12 @@ package com.pollServicePollSystem.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.pollServicePollSystem.model.Question;
-import com.pollServicePollSystem.repository.QuestionRepository;
+import com.pollServicePollSystem.model.QuestionResponse;
 import com.pollServicePollSystem.service.QuestionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/pollQuestion")
@@ -13,6 +15,7 @@ public class QuestionController {
 
     @Autowired
     QuestionService questionService;
+
 
     @PostMapping("/create")
     public void createQuestion(@RequestBody Question question) throws JsonProcessingException {
@@ -33,5 +36,11 @@ public class QuestionController {
     public Question getQuestionById(@PathVariable Long questionId){
         return questionService.getQuestionById(questionId);
     }
+
+    @GetMapping("/all")
+    public List<Question> getAllPollQuestions(){
+        return questionService.getAllPollQuestions();
+    }
+
 
 }

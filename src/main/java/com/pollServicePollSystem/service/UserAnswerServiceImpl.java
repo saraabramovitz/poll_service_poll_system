@@ -16,24 +16,30 @@ public class UserAnswerServiceImpl implements UserAnswerService {
     private UserAnswerRepository userAnswerRepository;
     @Autowired
     private UserService userService;
+    @Autowired
+    private QuestionService questionService;
 
 
 
     @Override
-    public void saveUserPoll(UserPoll userPoll) {
+    public void saveUserPollAnswer(UserPoll userPoll) {
         Long userId = userPoll.getUserId();
         List<UserAnswer> userAnswers = userPoll.getUserPoll();
 
-        UserResponse userResponse = userService.getUserById(userId);
+        UserResponse checkIfUserExists = userService.getUserById(userId);
 
-        if(userResponse == null){
+        if(checkIfUserExists == null){
         System.out.println("the user is not exist");
         }
         else {
-            if(userResponse.getIsRegistered() == true){
+            if(checkIfUserExists.getIsRegistered() == true){
                 for (UserAnswer userAnswer : userAnswers) {
                     if(userAnswerRepository.getUserAnswersByUserId(userId, userAnswer) == null){
-                        userAnswerRepository.saveUserPollAnswer(userId, userAnswer);
+                        if(checkIfQuestionExistInPollQuestion(userAnswer.getQuestionId())){
+                            userAnswerRepository.saveUserPollAnswer(userId, userAnswer);
+                        } else {
+                            System.out.println("the Question is not exist in the poll Questions");
+                        }
                     }else {
                         userAnswerRepository.updateUserPollAnswer(userId, userAnswer);
                     }
@@ -50,4 +56,25 @@ public class UserAnswerServiceImpl implements UserAnswerService {
     public void deletePollAnswersByUserId(Long userId) {
         userAnswerRepository.deletePollAnswersByUserId(userId);
     }
+
+    public void deletePollAnswersByQuestionId(Long questionId) {
+        userAnswerRepository.deletePollAnswersByQuestionId(questionId);
+    }
+
+    public Boolean checkIfQuestionExistInPollQuestion(Long questionId){
+        if(questionService.getQuestionById(questionId) == null){
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+   // public Boolean checkIfAnswerExistInAnswerOption(String Answer){
+  //      if(questionService.getAnswerByQuestionId(questionId) == null){
+  //          return false;
+   //     } else {
+   //         return true;
+  //      }
+   // }
+
 }
