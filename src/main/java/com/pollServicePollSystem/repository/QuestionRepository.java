@@ -1,6 +1,8 @@
 package com.pollServicePollSystem.repository;
 
+import com.pollServicePollSystem.model.AnswerOption;
 import com.pollServicePollSystem.model.Question;
+import com.pollServicePollSystem.model.Question2;
 import com.pollServicePollSystem.model.QuestionResponse;
 
 import java.util.List;
@@ -13,4 +15,7 @@ public interface QuestionRepository {
     List<Question> getAllPollQuestions();
     Question getQuestionQuestionTitle(String questionTitle);
     String getAnswerByQuestionId(String answer, Long questionId);
+
+    void createQuestion2InQuestionTable(Question2 question2);
+  //  void createQuestion2InOptionTable(Question2 question2);
 }

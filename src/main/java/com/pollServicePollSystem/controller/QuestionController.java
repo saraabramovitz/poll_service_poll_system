@@ -2,6 +2,7 @@ package com.pollServicePollSystem.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.pollServicePollSystem.model.Question;
+import com.pollServicePollSystem.model.Question2;
 import com.pollServicePollSystem.model.QuestionResponse;
 import com.pollServicePollSystem.service.QuestionService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +22,7 @@ public class QuestionController {
     public void createQuestion(@RequestBody Question question) throws JsonProcessingException {
         questionService.createQuestion(question);
     }
+
 
     @PutMapping("/update")
     public void updateQuestion(@RequestBody Question question) {
@@ -43,4 +45,10 @@ public class QuestionController {
     }
 
 
+
+
+    @PostMapping("/create2")
+    public void createQuestion2(@RequestBody Question2 question2) throws JsonProcessingException {
+        questionService.createQuestion2(question2);
+    }
 }

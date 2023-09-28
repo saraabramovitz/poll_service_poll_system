@@ -1,7 +1,6 @@
 package com.pollServicePollSystem.repository;
 
-import com.pollServicePollSystem.model.Question;
-import com.pollServicePollSystem.model.QuestionResponse;
+import com.pollServicePollSystem.model.*;
 import com.pollServicePollSystem.repository.mapper.QuestionMapper;
 import com.pollServicePollSystem.repository.mapper.QuestionResponseMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +14,9 @@ import java.util.List;
 public class QuestionRepositoryImpl implements QuestionRepository{
 
     public static final String POLL_QUESTION_TABLE_NAME = "pool_question";
+    public static final String QUESTION_TABLE_NAME = "question";
+    public static final String ANSWER_OPTION_TABLE_NAME = "answer_option";
+
 
     @Autowired
     JdbcTemplate jdbcTemplate;
@@ -96,5 +98,27 @@ public class QuestionRepositoryImpl implements QuestionRepository{
             return null;
         }
     }
+
+    @Override
+    public void createQuestion2InQuestionTable(Question2 question2) {
+        String sql = "INSERT INTO " + QUESTION_TABLE_NAME + " (question_title) values (?)";
+        jdbcTemplate.update(sql, question2.getQuestionTitle());
+
+        List<AnswerOption> answerOptions = question2.getAnswerOption();
+        Long lostCreatedQuestionId = jdbcTemplate.queryForObject("SELECT LAST_INSERT_ID()", Long.class);
+        for (AnswerOption answerOption : answerOptions){
+
+            String sql2 = "INSERT INTO " + ANSWER_OPTION_TABLE_NAME + " (question_id, answer_option) values (?, ?)";
+            jdbcTemplate.update(
+                    sql2,
+                    lostCreatedQuestionId,
+                    answerOption.getAnswerOption()
+            );
+        }
+
+    }
+
+
+
 
 }

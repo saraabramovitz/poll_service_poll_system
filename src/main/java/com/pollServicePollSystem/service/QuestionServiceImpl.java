@@ -1,11 +1,14 @@
 package com.pollServicePollSystem.service;
 
+import com.pollServicePollSystem.model.AnswerOption;
 import com.pollServicePollSystem.model.Question;
+import com.pollServicePollSystem.model.Question2;
 import com.pollServicePollSystem.model.QuestionResponse;
 import com.pollServicePollSystem.repository.QuestionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.swing.text.html.Option;
 import java.util.List;
 
 @Service
@@ -57,7 +60,19 @@ public class QuestionServiceImpl implements QuestionService{
         return questionRepository.getAllPollQuestions();
     }
 
-   // public String getAnswerByQuestionId(String answer, Long questionId){
+    @Override
+    public void createQuestion2(Question2 question2) {
+        List<AnswerOption> answerOptions = question2.getAnswerOption();
+        if (answerOptions.size() == 4){
+            questionRepository.createQuestion2InQuestionTable(question2);
+
+           // questionRepository.createQuestion2InOptionTable(question2);
+
+        }
+
+    }
+
+    // public String getAnswerByQuestionId(String answer, Long questionId){
 //
    // }
 }
