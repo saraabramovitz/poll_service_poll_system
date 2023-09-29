@@ -8,18 +8,25 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 @Component
-public class QuestionMapper implements RowMapper<Question>{
-
+public class QuestionMapper implements RowMapper<Question> {
     @Override
     public Question mapRow(ResultSet rs, int rowNum) throws SQLException {
-        Question question = new Question(
-                rs.getLong("question_id"),
-                rs.getString("question_title"),
-                rs.getString("first_answer_option"),
-                rs.getString("second_answer_option"),
-                rs.getString("third_answer_option"),
-                rs.getString("fourth_answer_option")
-        );
-        return question;
+        Long questionId = rs.getLong("question_id");
+        String questionTitle = rs.getString("question_title");
+        Long optionAId = rs.getLong("answer_option_id");
+        String optionA = rs.getString("answer_option_title");
+        rs.next();
+        Long optionBId = rs.getLong("answer_option_id");
+        String optionB = rs.getString("answer_option_title");
+        rs.next();
+        Long optionCId = rs.getLong("answer_option_id");
+        String optionC = rs.getString("answer_option_title");
+        rs.next();
+        Long optionDId = rs.getLong("answer_option_id");
+        String optionD = rs.getString("answer_option_title");
+
+        return new Question(questionId, questionTitle,
+                optionAId, optionA, optionBId, optionB,
+                optionCId, optionC, optionDId, optionD);
     }
 }

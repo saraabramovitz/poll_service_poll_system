@@ -3,20 +3,26 @@ package com.pollServicePollSystem.model;
 public class Question {
     private Long questionId;
     private String questionTitle;
-    private String firstAnswerOption;
-    private String secondAnswerOption;
-    private String thirdAnswerOption;
-    private String fourthAnswerOption;
+    private Long optionAId;
+    private String optionA;
+    private Long optionBId;
+    private String optionB;
+    private Long optionCId;
+    private String optionC;
+    private Long optionDId;
+    private String optionD;
 
-    public Question() {}
-
-    public Question(Long questionId, String questionTitle, String firstAnswerOption, String secondAnswerOption, String thirdAnswerOption, String fourthAnswerOption) {
+    public Question(Long questionId, String questionTitle, Long optionAId, String optionA, Long optionBId, String optionB, Long optionCId, String optionC, Long optionDId, String optionD) {
         this.questionId = questionId;
         this.questionTitle = questionTitle;
-        this.firstAnswerOption = firstAnswerOption;
-        this.secondAnswerOption = secondAnswerOption;
-        this.thirdAnswerOption = thirdAnswerOption;
-        this.fourthAnswerOption = fourthAnswerOption;
+        this.optionAId = optionAId;
+        this.optionA = optionA;
+        this.optionBId = optionBId;
+        this.optionB = optionB;
+        this.optionCId = optionCId;
+        this.optionC = optionC;
+        this.optionDId = optionDId;
+        this.optionD = optionD;
     }
 
     public Long getQuestionId() {
@@ -27,20 +33,36 @@ public class Question {
         return questionTitle;
     }
 
-    public String getFirstAnswerOption() {
-        return firstAnswerOption;
+    public Long getOptionAId() {
+        return optionAId;
     }
 
-    public String getSecondAnswerOption() {
-        return secondAnswerOption;
+    public String getOptionA() {
+        return optionA;
     }
 
-    public String getThirdAnswerOption() {
-        return thirdAnswerOption;
+    public Long getOptionBId() {
+        return optionBId;
     }
 
-    public String getFourthAnswerOption() {
-        return fourthAnswerOption;
+    public String getOptionB() {
+        return optionB;
+    }
+
+    public Long getOptionCId() {
+        return optionCId;
+    }
+
+    public String getOptionC() {
+        return optionC;
+    }
+
+    public Long getOptionDId() {
+        return optionDId;
+    }
+
+    public String getOptionD() {
+        return optionD;
     }
 
     public void setQuestionId(Long questionId) {
@@ -51,19 +73,35 @@ public class Question {
         this.questionTitle = questionTitle;
     }
 
-    public void setFirstAnswerOption(String firstAnswerOption) {
-        this.firstAnswerOption = firstAnswerOption;
+    public void setOptionAId(Long optionAId) {
+        this.optionAId = optionAId;
     }
 
-    public void setSecondAnswerOption(String secondAnswerOption) {
-        this.secondAnswerOption = secondAnswerOption;
+    public void setOptionA(String optionA) {
+        this.optionA = optionA;
     }
 
-    public void setThirdAnswerOption(String thirdAnswerOption) {
-        this.thirdAnswerOption = thirdAnswerOption;
+    public void setOptionBId(Long optionBId) {
+        this.optionBId = optionBId;
     }
 
-    public void setFourthAnswerOption(String fourthAnswerOption) {
-        this.fourthAnswerOption = fourthAnswerOption;
+    public void setOptionB(String optionB) {
+        this.optionB = optionB;
+    }
+
+    public void setOptionCId(Long optionCId) {
+        this.optionCId = optionCId;
+    }
+
+    public void setOptionC(String optionC) {
+        this.optionC = optionC;
+    }
+
+    public void setOptionDId(Long optionDId) {
+        this.optionDId = optionDId;
+    }
+
+    public void setOptionD(String optionD) {
+        this.optionD = optionD;
     }
 }

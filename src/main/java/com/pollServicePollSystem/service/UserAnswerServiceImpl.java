@@ -19,37 +19,36 @@ public class UserAnswerServiceImpl implements UserAnswerService {
     @Autowired
     private QuestionService questionService;
 
-
-
     @Override
     public void saveUserPollAnswer(UserPoll userPoll) {
         Long userId = userPoll.getUserId();
         List<UserAnswer> userAnswers = userPoll.getUserPoll();
 
-        UserResponse checkIfUserExists = userService.getUserById(userId);
-
-        if(checkIfUserExists == null){
-        System.out.println("the user is not exist");
-        }
-        else {
-            if(checkIfUserExists.getIsRegistered() == true){
-                for (UserAnswer userAnswer : userAnswers) {
-                    if(userAnswerRepository.getUserAnswersByUserId(userId, userAnswer) == null){
-                        if(checkIfQuestionExistInPollQuestion(userAnswer.getQuestionId())){
-                            userAnswerRepository.saveUserPollAnswer(userId, userAnswer);
-                        } else {
-                            System.out.println("the Question is not exist in the poll Questions");
-                        }
-                    }else {
-                        userAnswerRepository.updateUserPollAnswer(userId, userAnswer);
-                    }
-                }
-                System.out.println("the user can answer the poll");
-            } else {
-                System.out.println("the user is not registered");
+        try {
+            UserResponse checkIfUserExists = userService.getUserById(userId);
+            if (checkIfUserExists == null) {
+                throw new IllegalArgumentException("The user does not exist.");
             }
+            if (!checkIfUserExists.getIsRegistered()) {
+                throw new IllegalArgumentException("The user is not registered.");
+            }
+
+            for (UserAnswer userAnswer : userAnswers) {
+                if (userAnswerRepository.getUserAnswersByUserId(userId, userAnswer) == null) {
+                    if (checkIfQuestionExistInPollQuestion(userAnswer.getQuestionId())) {
+                        userAnswerRepository.saveUserPollAnswer(userId, userAnswer);
+                    } else {
+                        throw new IllegalStateException("The question does not exist in the poll questions.");
+                    }
+                } else {
+                    userAnswerRepository.updateUserPollAnswer(userId, userAnswer);
+                }
+            }
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            System.out.println("Error: " + e.getMessage());
         }
     }
+
 
 
     @Override

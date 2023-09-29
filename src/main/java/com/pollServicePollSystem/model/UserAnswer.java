@@ -2,28 +2,29 @@ package com.pollServicePollSystem.model;
 
 public class UserAnswer {
     private Long questionId;
-    private String answer;
+    private Long answerId;
 
-    public UserAnswer() {}
+    public UserAnswer() {
+    }
 
-    public UserAnswer(Long questionId, String answer) {
+    public UserAnswer(Long questionId, Long answerId) {
         this.questionId = questionId;
-        this.answer = answer;
+        this.answerId = answerId;
     }
 
     public Long getQuestionId() {
         return questionId;
     }
 
-    public String getAnswer() {
-        return answer;
+    public Long getAnswerId() {
+        return answerId;
     }
 
     public void setQuestionId(Long questionId) {
         this.questionId = questionId;
     }
 
-    public void setAnswer(String answer) {
-        this.answer = answer;
+    public void setAnswerId(Long answerId) {
+        this.answerId = answerId;
     }
 }

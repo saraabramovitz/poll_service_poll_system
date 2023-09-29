@@ -2,7 +2,6 @@ package com.pollServicePollSystem.repository;
 
 import com.pollServicePollSystem.model.*;
 import com.pollServicePollSystem.repository.mapper.QuestionMapper;
-import com.pollServicePollSystem.repository.mapper.QuestionResponseMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -17,44 +16,68 @@ public class QuestionRepositoryImpl implements QuestionRepository{
     public static final String QUESTION_TABLE_NAME = "question";
     public static final String ANSWER_OPTION_TABLE_NAME = "answer_option";
 
+    public static final String OPTION_TYPE_A = "a";
+    public static final String OPTION_TYPE_B = "b";
+    public static final String OPTION_TYPE_C = "c";
+    public static final String OPTION_TYPE_D = "d";
+
 
     @Autowired
     JdbcTemplate jdbcTemplate;
-    @Autowired
-    QuestionResponseMapper questionResponseMapper;
-
     @Autowired
     QuestionMapper questionMapper;
 
 
 
-
-    @Override
     public void createQuestion(Question question) {
-        String sql = "INSERT INTO " + POLL_QUESTION_TABLE_NAME + " (question_title, first_answer_option, second_answer_option, third_answer_option, fourth_answer_option) values (?, ?, ?, ?, ?)";
-        jdbcTemplate.update(
-                sql,
-                question.getQuestionTitle(),
-                question.getFirstAnswerOption(),
-                question.getSecondAnswerOption(),
-                question.getThirdAnswerOption(),
-                question.getFourthAnswerOption()
-        );
+        String sql = "INSERT INTO " + QUESTION_TABLE_NAME + " (question_title) values (?)";
+        jdbcTemplate.update(sql, question.getQuestionTitle());
+        Long lostCreatedQuestionId = jdbcTemplate.queryForObject("SELECT LAST_INSERT_ID()", Long.class);
 
+        String sqlA = "INSERT INTO " + ANSWER_OPTION_TABLE_NAME + " (question_id, option_type, answer_option_title) values (?, ?, ?)";
+        jdbcTemplate.update(
+                sqlA,
+                lostCreatedQuestionId,
+                OPTION_TYPE_A,
+                question.getOptionA()
+        );
+        String sqlB = "INSERT INTO " + ANSWER_OPTION_TABLE_NAME + " (question_id, option_type, answer_option_title) values (?, ?, ?)";
+        jdbcTemplate.update(
+                sqlB,
+                lostCreatedQuestionId,
+                OPTION_TYPE_B,
+                question.getOptionB());
+
+        String sqlC = "INSERT INTO " + ANSWER_OPTION_TABLE_NAME + " (question_id, option_type, answer_option_title) values (?, ?, ?)";
+        jdbcTemplate.update(
+                sqlC,
+                lostCreatedQuestionId,
+                OPTION_TYPE_C,
+                question.getOptionC());
+
+        String sqlD = "INSERT INTO " + ANSWER_OPTION_TABLE_NAME + " (question_id, option_type, answer_option_title) values (?, ?, ?)";
+        jdbcTemplate.update(
+                sqlD,
+                lostCreatedQuestionId,
+                OPTION_TYPE_D,
+                question.getOptionD());
     }
+
+
 
     @Override
     public void updateQuestion(Question question) {
-        String sql = "UPDATE " + POLL_QUESTION_TABLE_NAME + " SET question_title=?, first_answer_option=?, second_answer_option=?, third_answer_option=?, fourth_answer_option=? WHERE question_id=?";
+        Long questionId = question.getQuestionId();
+        Long optionId = question.getOptionAId();
+        String sql = "UPDATE " + QUESTION_TABLE_NAME + " SET question_title=?, WHERE id=?";
         jdbcTemplate.update(
                 sql,
-                question.getQuestionTitle(),
-                question.getFirstAnswerOption(),
-                question.getSecondAnswerOption(),
-                question.getThirdAnswerOption(),
-                question.getFourthAnswerOption(),
-                question.getQuestionId()
-        );
+                questionId);
+
+        String sql1 = "UPDATE " + ANSWER_OPTION_TABLE_NAME + " SET question_title=?, WHERE id=?";
+        jdbcTemplate.update(
+                sql,
+                questionId);
 
     }
 
@@ -66,27 +89,26 @@ public class QuestionRepositoryImpl implements QuestionRepository{
 
     @Override
     public Question getQuestionById(Long questionId) {
-        String sql = "SELECT * FROM " + POLL_QUESTION_TABLE_NAME + " WHERE question_id=?";
+        String sql = "SELECT * FROM " + QUESTION_TABLE_NAME +
+                " JOIN " + ANSWER_OPTION_TABLE_NAME +
+                " ON answer_option.question_id = question.question_id " +
+                " WHERE question.question_id = ?";
         try {
             return jdbcTemplate.queryForObject(sql, questionMapper, questionId);
         } catch (EmptyResultDataAccessException e) {
-            System.out.println("Empty Data Warning");
             return null;
         }
     }
-
     public List<Question> getAllPollQuestions(){
-        String sql = "SELECT * FROM " + POLL_QUESTION_TABLE_NAME;
+        String sql =  "SELECT * FROM " + QUESTION_TABLE_NAME +
+                " JOIN " + ANSWER_OPTION_TABLE_NAME +
+                " ON answer_option.question_id = question.question_id ";
         return jdbcTemplate.query(sql, questionMapper);
     }
 
-    public Question getQuestionQuestionTitle(String questionTitle){
-        String sql = "SELECT * FROM " + POLL_QUESTION_TABLE_NAME + " WHERE question_title=?";
-        try {
-            return jdbcTemplate.queryForObject(sql, questionMapper, questionTitle);
-        } catch (EmptyResultDataAccessException e) {
-            return null;
-        }
+    @Override
+    public Question getQuestionByQuestionTitle(String questionTitle) {
+        return null;
     }
 
 
@@ -98,26 +120,6 @@ public class QuestionRepositoryImpl implements QuestionRepository{
             return null;
         }
     }
-
-    @Override
-    public void createQuestion2InQuestionTable(Question2 question2) {
-        String sql = "INSERT INTO " + QUESTION_TABLE_NAME + " (question_title) values (?)";
-        jdbcTemplate.update(sql, question2.getQuestionTitle());
-
-        List<AnswerOption> answerOptions = question2.getAnswerOption();
-        Long lostCreatedQuestionId = jdbcTemplate.queryForObject("SELECT LAST_INSERT_ID()", Long.class);
-        for (AnswerOption answerOption : answerOptions){
-
-            String sql2 = "INSERT INTO " + ANSWER_OPTION_TABLE_NAME + " (question_id, answer_option) values (?, ?)";
-            jdbcTemplate.update(
-                    sql2,
-                    lostCreatedQuestionId,
-                    answerOption.getAnswerOption()
-            );
-        }
-
-    }
-
 
 
 
