@@ -1,28 +1,16 @@
 package com.pollServicePollSystem.model;
 
+import java.util.ArrayList;
+
 public class Question {
     private Long questionId;
     private String questionTitle;
-    private Long optionAId;
-    private String optionA;
-    private Long optionBId;
-    private String optionB;
-    private Long optionCId;
-    private String optionC;
-    private Long optionDId;
-    private String optionD;
+    private ArrayList<Option> answerOptions;
 
-    public Question(Long questionId, String questionTitle, Long optionAId, String optionA, Long optionBId, String optionB, Long optionCId, String optionC, Long optionDId, String optionD) {
+    public Question(Long questionId, String questionTitle, ArrayList<Option> answerOptions) {
         this.questionId = questionId;
         this.questionTitle = questionTitle;
-        this.optionAId = optionAId;
-        this.optionA = optionA;
-        this.optionBId = optionBId;
-        this.optionB = optionB;
-        this.optionCId = optionCId;
-        this.optionC = optionC;
-        this.optionDId = optionDId;
-        this.optionD = optionD;
+        this.answerOptions = answerOptions;
     }
 
     public Long getQuestionId() {
@@ -33,36 +21,8 @@ public class Question {
         return questionTitle;
     }
 
-    public Long getOptionAId() {
-        return optionAId;
-    }
-
-    public String getOptionA() {
-        return optionA;
-    }
-
-    public Long getOptionBId() {
-        return optionBId;
-    }
-
-    public String getOptionB() {
-        return optionB;
-    }
-
-    public Long getOptionCId() {
-        return optionCId;
-    }
-
-    public String getOptionC() {
-        return optionC;
-    }
-
-    public Long getOptionDId() {
-        return optionDId;
-    }
-
-    public String getOptionD() {
-        return optionD;
+    public ArrayList<Option> getAnswerOptions() {
+        return answerOptions;
     }
 
     public void setQuestionId(Long questionId) {
@@ -73,35 +33,7 @@ public class Question {
         this.questionTitle = questionTitle;
     }
 
-    public void setOptionAId(Long optionAId) {
-        this.optionAId = optionAId;
-    }
-
-    public void setOptionA(String optionA) {
-        this.optionA = optionA;
-    }
-
-    public void setOptionBId(Long optionBId) {
-        this.optionBId = optionBId;
-    }
-
-    public void setOptionB(String optionB) {
-        this.optionB = optionB;
-    }
-
-    public void setOptionCId(Long optionCId) {
-        this.optionCId = optionCId;
-    }
-
-    public void setOptionC(String optionC) {
-        this.optionC = optionC;
-    }
-
-    public void setOptionDId(Long optionDId) {
-        this.optionDId = optionDId;
-    }
-
-    public void setOptionD(String optionD) {
-        this.optionD = optionD;
+    public void setAnswerOptions(ArrayList<Option> answerOptions) {
+        this.answerOptions = answerOptions;
     }
 }
