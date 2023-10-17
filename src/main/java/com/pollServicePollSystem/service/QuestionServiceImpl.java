@@ -1,15 +1,11 @@
 package com.pollServicePollSystem.service;
 
-import com.pollServicePollSystem.model.Option;
-import com.pollServicePollSystem.model.Question;
+import com.pollServicePollSystem.model.*;
 import com.pollServicePollSystem.repository.QuestionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Service
 public class QuestionServiceImpl implements QuestionService {
@@ -24,16 +20,48 @@ public class QuestionServiceImpl implements QuestionService {
 
     @Override
     public void createQuestion(Question question) {
-        if (isValidQuestionForCreate(question)) {
-            questionRepository.createQuestion(question);
+        ArrayList<Option> optionsArray = question.getAnswerOptions();
+
+        if (isValidQuestion(question.getQuestionId(), question.getQuestionTitle())) {
+            if (optionsArray.size() == ANSWER_OPTION_AMOUNT) {
+                if (isValidOptionsForCreate(optionsArray)) {
+                    questionRepository.createQuestion(question);
+                }
+            } else { System.out.println("Invalid amount of options."); }
         }
     }
 
     @Override
     public void updateQuestion(Question question) {
-        if (isValidQuestionForUpdate(question)){
-            questionRepository.updateQuestion(question);
+        ArrayList<Option> optionsArray = question.getAnswerOptions();
+        if (isValidQuestion(question.getQuestionId(), question.getQuestionTitle())) {
+            if (optionsArray.size() <= ANSWER_OPTION_AMOUNT) {
+                if (isValidOptionsForUpdate(question.getQuestionId(), optionsArray)) {
+                    questionRepository.updateQuestion(question);
+                }
+            } else { System.out.println("Invalid amount of options.");
+            }
         }
+    }
+
+    @Override
+    public void updateQuestionTitle(QuestionTitle questionTitle) {
+        if (isValidQuestion(questionTitle.getQuestionId(), questionTitle.getQuestionTitle())) {
+            questionRepository.updateQuestionTitle(questionTitle);
+        }
+    }
+
+
+    @Override
+    public void updateQuestionOptions(QuestionOption questionOption) {
+        ArrayList<Option> optionsArray = questionOption.getAnswerOptions();
+        Long questionId = questionOption.getQuestionId();
+
+        if (optionsArray.size() <= ANSWER_OPTION_AMOUNT) {
+            if (isValidOptionsForUpdate(questionId, optionsArray)) {
+                questionRepository.updateQuestionOptions(questionOption);
+            }
+        } else { System.out.println("Invalid amount of options."); }
     }
 
     @Override
@@ -62,27 +90,32 @@ public class QuestionServiceImpl implements QuestionService {
     }
 
     @Override
-    public boolean isValidQuestionForCreate(Question question) {
-        ArrayList<Option> optionsArray = question.getAnswerOptions();
-        Question existingQuestion = questionRepository.getQuestionByQuestionTitle(question);
-
+    public boolean isValidQuestion(Long questionId, String questionTitle) {
+        Question existingQuestion = questionRepository.getQuestionByQuestionTitle(questionTitle);
         if (existingQuestion == null) {
-            if (optionsArray.size() == ANSWER_OPTION_AMOUNT) {
-                if (isValidOptionsForCreate(optionsArray)) {
-                    return true;
-                } else { System.out.println("Invalid options"); }
-            } else { System.out.println("Invalid amount of options."); }
-        } else { System.out.println("The question already exists."); }
-        return false;
+            return true;
+        } else {
+            System.out.println("The question already exists.");
+            return false;
+        }
+    }
+
+    @Override
+    public boolean isValidQuestionForUpdate(Long questionId, String questionTitle) {
+        Question existingQuestion = questionRepository.getQuestionByQuestionTitle(questionTitle);
+        if (existingQuestion == null || existingQuestion.getQuestionId() == questionId) {
+            return true;
+        } else {
+            System.out.println("The question already exists.");
+            return false;
+        }
     }
 
     @Override
     public boolean isValidOptionsForCreate(ArrayList<Option> optionsArray) {
         Set<String> uniqueOptionTitle = new HashSet<>();
-
         for (Option option : optionsArray) {
             String optionTitle = option.getOptionTitle();
-
             if (!uniqueOptionTitle.add(optionTitle)) {
                 System.out.println("Duplicate option: " + optionTitle);
                 return false;
@@ -91,23 +124,9 @@ public class QuestionServiceImpl implements QuestionService {
         return true;
     }
 
-    @Override
-    public boolean isValidQuestionForUpdate(Question question) {
-        ArrayList<Option> optionsArray = question.getAnswerOptions();
-        Question existingQuestion = questionRepository.getQuestionByQuestionTitle(question);
-
-        if (existingQuestion == null || existingQuestion.getQuestionId() == question.getQuestionId()) {
-            if (optionsArray.size() <= ANSWER_OPTION_AMOUNT) {
-                if (isValidOptionsForUpdate(question, optionsArray)) {
-                    return true;
-                } else { System.out.println("Invalid options"); }
-            } else { System.out.println("Invalid amount of options."); }
-        } else { System.out.println("The question already exists."); }
-        return false;
-    }
 
     @Override
-    public boolean isValidOptionsForUpdate(Question question, ArrayList<Option> optionsArray){
+    public boolean isValidOptionsForUpdate(Long questionId, ArrayList<Option> optionsArray){
         Set<String> uniqueOptionTitle = new HashSet<>();
         Set<Long> uniqueOptionId = new HashSet<>();
 
@@ -119,7 +138,7 @@ public class QuestionServiceImpl implements QuestionService {
                 System.out.println("Duplicate option: " + optionTitle);
                 return false;
             }
-            if (questionRepository.getOptionByQuestionIdAndOptionID(question.getQuestionId(), option) == null) {
+            if (questionRepository.getOptionByQuestionIdAndOptionId(questionId, optionId) == null) {
                 System.out.println("Invalid id for this question");
                 return false;
             }
@@ -132,6 +151,74 @@ public class QuestionServiceImpl implements QuestionService {
     }
 
 
+    @Override
+    public Option getOptionByQuestionIdAndOptionId(Long questionId, Long optionId) {
+        return questionRepository.getOptionByQuestionIdAndOptionId(questionId, optionId);
+    }
+
+    @Override
+    public Long getQuestionIdByOptionId(Long optionId) {
+        return questionRepository.getQuestionIdByOptionId(optionId);
+    }
+
+    @Override
+    public Question tryNewQuestionMap(Long questionId) {
+
+        List<QuestionTry> questionTries = questionRepository.tryNewQuestionMap(questionId);
+        ArrayList<Option> options = new ArrayList<>();
+
+        Long questionTryId = null;
+        String questionTryTitle = null;
+
+        for (QuestionTry questionTry : questionTries){
+            questionTryId = questionTry.getQuestionId();
+            questionTryTitle = questionTry.getQuestionTitle();
+
+            Option option = questionTry.getOption();
+            options.add(option);
+        }
+
+        return new Question(questionTryId, questionTryTitle, options);
+    }
+
+    @Override
+    public List<Question> tryNewQuestionMapAll() {
+        List<QuestionTry> questionTries = questionRepository.tryNewQuestionMapAll();
+        List<Question> questions = new ArrayList<>();
+        ArrayList<Option> options = new ArrayList<>();
+
+        Long previousQuestionTryId = null;
+        Long questionTryId = null;
+        String questionTryTitle = null;
+
+        for (QuestionTry questionTry : questionTries) {
+            if (questionTryId == null) {
+                questionTryId = questionTry.getQuestionId();
+                questionTryTitle = questionTry.getQuestionTitle();
+                previousQuestionTryId = questionTry.getQuestionId();
+            }
+            if (questionTry.getQuestionId().equals(previousQuestionTryId)) {
+                Option option = questionTry.getOption();
+                options.add(option);
+            } else {
+                if (questionTryId != null) {
+                    Question question = new Question(questionTryId, questionTryTitle, new ArrayList<>(options));
+                    questions.add(question);
+                }
+                questionTryId = questionTry.getQuestionId();
+                questionTryTitle = questionTry.getQuestionTitle();
+                options.clear();
+                Option option = questionTry.getOption();
+                options.add(option);
+            }
+            previousQuestionTryId = questionTry.getQuestionId();
+        }
+        if (questionTryId != null) {
+            Question question = new Question(questionTryId, questionTryTitle, new ArrayList<>(options));
+            questions.add(question);
+        }
+        return questions;
+    }
 }
 
 

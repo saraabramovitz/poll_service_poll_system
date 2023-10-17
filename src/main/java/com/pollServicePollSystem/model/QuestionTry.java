@@ -1,16 +1,18 @@
 package com.pollServicePollSystem.model;
 
-import java.util.ArrayList;
-
-public class Question implements QuestionAble{
+public class QuestionTry {
     private Long questionId;
     private String questionTitle;
-    private ArrayList<Option> answerOptions;
+    private Option option;
 
-    public Question(Long questionId, String questionTitle, ArrayList<Option> answerOptions) {
+
+    public QuestionTry() {
+    }
+
+    public QuestionTry(Long questionId, String questionTitle, Option option) {
         this.questionId = questionId;
         this.questionTitle = questionTitle;
-        this.answerOptions = answerOptions;
+        this.option = option;
     }
 
     public Long getQuestionId() {
@@ -21,8 +23,8 @@ public class Question implements QuestionAble{
         return questionTitle;
     }
 
-    public ArrayList<Option> getAnswerOptions() {
-        return answerOptions;
+    public Option getOption() {
+        return option;
     }
 
     public void setQuestionId(Long questionId) {
@@ -33,7 +35,7 @@ public class Question implements QuestionAble{
         this.questionTitle = questionTitle;
     }
 
-    public void setAnswerOptions(ArrayList<Option> answerOptions) {
-        this.answerOptions = answerOptions;
+    public void setOption(Option option) {
+        this.option = option;
     }
 }
