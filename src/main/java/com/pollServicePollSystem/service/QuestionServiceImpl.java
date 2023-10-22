@@ -11,143 +11,229 @@ import java.util.*;
 public class QuestionServiceImpl implements QuestionService {
 
     public static final Integer ANSWER_OPTION_AMOUNT = 4;
-
     @Autowired
     QuestionRepository questionRepository;
     @Autowired
-    UserAnswerService userAnswerService;
+    AnswerService answerService;
 
 
     @Override
     public void createQuestion(Question question) {
-        ArrayList<Option> optionsArray = question.getAnswerOptions();
-
-        if (isValidQuestion(question.getQuestionId(), question.getQuestionTitle())) {
-            if (optionsArray.size() == ANSWER_OPTION_AMOUNT) {
-                if (isValidOptionsForCreate(optionsArray)) {
-                    questionRepository.createQuestion(question);
-                }
-            } else { System.out.println("Invalid amount of options."); }
+        try {
+            List<Option> options = question.getOptions();
+            if (isQuestionValidForCreate(question)) {
+                if (isOptionsValidForCreate(options)) {
+                questionRepository.createQuestion(question); }
+            }
+        } catch (IllegalArgumentException e) {
+            throw e;
         }
     }
 
     @Override
     public void updateQuestion(Question question) {
-        ArrayList<Option> optionsArray = question.getAnswerOptions();
-        if (isValidQuestion(question.getQuestionId(), question.getQuestionTitle())) {
-            if (optionsArray.size() <= ANSWER_OPTION_AMOUNT) {
-                if (isValidOptionsForUpdate(question.getQuestionId(), optionsArray)) {
+        try {
+            if(isQuestionValidForUpdate(question)){
+                if (isOptionsValidForUpdate(question)) {
                     questionRepository.updateQuestion(question);
                 }
-            } else { System.out.println("Invalid amount of options.");
             }
+        } catch (IllegalArgumentException e) {
+            throw e;
         }
     }
 
     @Override
-    public void updateQuestionTitle(QuestionTitle questionTitle) {
-        if (isValidQuestion(questionTitle.getQuestionId(), questionTitle.getQuestionTitle())) {
-            questionRepository.updateQuestionTitle(questionTitle);
+    public void updateQuestionTitle(Question question) {
+        try {
+            if(isQuestionValidForUpdate(question)){
+                questionRepository.updateQuestionTitle(question);
+            }
+        } catch(IllegalArgumentException e){
+            throw e;
         }
     }
 
 
     @Override
-    public void updateQuestionOptions(QuestionOption questionOption) {
-        ArrayList<Option> optionsArray = questionOption.getAnswerOptions();
-        Long questionId = questionOption.getQuestionId();
-
-        if (optionsArray.size() <= ANSWER_OPTION_AMOUNT) {
-            if (isValidOptionsForUpdate(questionId, optionsArray)) {
-                questionRepository.updateQuestionOptions(questionOption);
+    public void updateQuestionOptions(Question question) {
+        try {
+            if(isOptionsValidForUpdate(question)){
+                questionRepository.updateQuestionOptions(question);
             }
-        } else { System.out.println("Invalid amount of options."); }
+        } catch (IllegalArgumentException e){
+            throw e;
+        }
     }
 
     @Override
     public void deleteQuestionById(Long questionId) {
-        if(questionRepository.getQuestionById(questionId) != null){
-            userAnswerService.deletePollAnswersByQuestionId(questionId);
-            questionRepository.deleteQuestionById(questionId);
-        } else {
-            System.out.println("The question with id " + questionId + " does not exist.");
+        try {
+            if (isQuestionIdExist(questionId)){
+                answerService.deletePollAnswersByQuestionId(questionId);
+                questionRepository.deleteQuestionById(questionId);
+            } else {
+                throw new IllegalArgumentException("The question with id " + questionId + " does not exist.");
+         }
+        } catch (IllegalArgumentException e){
+            throw e;
+        }
+    }
+
+
+    @Override
+    public Question getQuestionById(Long questionId) {
+        try {
+            if (isQuestionIdExist(questionId)){
+                List<QuestionResponse> questionResponseList = questionRepository.getQuestionById(questionId);
+                Question question = setQuestionFromQuestionResponse(questionResponseList);
+                return question;
+            } else {
+                throw new IllegalArgumentException("The question with id " + questionId + " does not exist.");
+            }
+        } catch (IllegalArgumentException e){
+            throw e;
         }
     }
 
     @Override
-    public Question getQuestionById(Long questionId) {
-        if(questionRepository.getQuestionById(questionId) != null) {
-            return questionRepository.getQuestionById(questionId);
+    public List<Question> getAllQuestions() {
+        List<QuestionResponse> questionResponseList = questionRepository.getAllQuestions();
+        List<Question> questionList = new ArrayList<>();
+        List<Option> optionList = new ArrayList<>();
+
+        Long previousId = null;
+        Long questionId = null;
+        String questionTitle = null;
+
+        for (QuestionResponse response : questionResponseList) {
+            Long questionResponseId = response.getQuestionId();
+            String questionResponseTitle = response.getQuestionTitle();
+            Option option = response.getOption();
+            if (previousId != null && !previousId.equals(questionResponseId)) {
+                questionList.add(new Question(previousId, questionTitle, new ArrayList<>(optionList)));
+                optionList.clear();
+            }
+
+            previousId = questionResponseId;
+            questionId = questionResponseId;
+            questionTitle = questionResponseTitle;
+            optionList.add(option);
+
+        }
+        if (questionId != null) {
+            questionList.add(new Question(questionId, questionTitle, new ArrayList<>(optionList)));
+        }
+        return questionList;
+    }
+
+    @Override
+    public Question getQuestionByQuestionTitle(String questionTitle){
+        List<QuestionResponse> questionResponseList = questionRepository.getQuestionByQuestionTitle(questionTitle);
+        Question question = setQuestionFromQuestionResponse(questionResponseList);
+        if(questionResponseList.size() != 0){
+            return question;
         } else {
-            System.out.println("The question with id " + questionId + " does not exist.");
             return null;
         }
     }
 
     @Override
-    public List<Question> getAllPollQuestions() {
-        return questionRepository.getAllPollQuestions();
-    }
-
-    @Override
-    public boolean isValidQuestion(Long questionId, String questionTitle) {
-        Question existingQuestion = questionRepository.getQuestionByQuestionTitle(questionTitle);
-        if (existingQuestion == null) {
-            return true;
-        } else {
-            System.out.println("The question already exists.");
-            return false;
+    public boolean isQuestionValidForCreate(Question question) {
+        Long questionId = question.getQuestionId();
+        String questionTitle = question.getQuestionTitle();
+        if(isQuestionIdExist(questionId)){
+            throw new IllegalArgumentException("Question id already exists.");
         }
-    }
-
-    @Override
-    public boolean isValidQuestionForUpdate(Long questionId, String questionTitle) {
-        Question existingQuestion = questionRepository.getQuestionByQuestionTitle(questionTitle);
-        if (existingQuestion == null || existingQuestion.getQuestionId() == questionId) {
-            return true;
-        } else {
-            System.out.println("The question already exists.");
-            return false;
-        }
-    }
-
-    @Override
-    public boolean isValidOptionsForCreate(ArrayList<Option> optionsArray) {
-        Set<String> uniqueOptionTitle = new HashSet<>();
-        for (Option option : optionsArray) {
-            String optionTitle = option.getOptionTitle();
-            if (!uniqueOptionTitle.add(optionTitle)) {
-                System.out.println("Duplicate option: " + optionTitle);
-                return false;
-            }
+        if (getQuestionByQuestionTitle(questionTitle) != null) {
+            throw new IllegalArgumentException("Question title already exists.");
         }
         return true;
     }
 
 
     @Override
-    public boolean isValidOptionsForUpdate(Long questionId, ArrayList<Option> optionsArray){
-        Set<String> uniqueOptionTitle = new HashSet<>();
-        Set<Long> uniqueOptionId = new HashSet<>();
+    public boolean isQuestionValidForUpdate(Question question) {
+        Long questionId = question.getQuestionId();
+        String questionTitle = question.getQuestionTitle();
+        Question questionResponseByTitle = getQuestionByQuestionTitle(questionTitle);
+        if(!isQuestionIdExist(questionId)){
+            throw new IllegalArgumentException("Question id does not exists.");
+        }
+        if (questionResponseByTitle == null || questionResponseByTitle.getQuestionId().equals(questionId)) {
+            return true;
+        } else {
+            throw new IllegalArgumentException("Question title already exists.");
+        }
+    }
 
-        for (Option option : optionsArray) {
-            String optionTitle = option.getOptionTitle();
-            Long optionId = option.getOptionId();
-
-            if (!uniqueOptionTitle.add(optionTitle) || !uniqueOptionId.add(optionId)) {
-                System.out.println("Duplicate option: " + optionTitle);
-                return false;
+    @Override
+    public boolean isOptionsValidForCreate(List<Option> options) {
+        if (options.size() == ANSWER_OPTION_AMOUNT){
+            Set<String> uniqueOptionTitle = new HashSet<>();
+            for (Option option : options) {
+                String optionTitle = option.getOptionTitle();
+                if (!uniqueOptionTitle.add(optionTitle)) {
+                    throw new IllegalArgumentException("Duplicated options.");
+                }
             }
-            if (questionRepository.getOptionByQuestionIdAndOptionId(questionId, optionId) == null) {
-                System.out.println("Invalid id for this question");
-                return false;
-            }
-            if (questionRepository.isOptionExists(optionTitle)) {
-                System.out.println("Option already exist in DB for this question " + optionTitle);
-                return false;
-            }
+        } else {
+            throw new IllegalArgumentException("Invalid option amount.");
         }
         return true;
+    }
+
+    @Override
+    public boolean isOptionsValidForUpdate(Question question){
+        try {
+            Long questionId = question.getQuestionId();
+            List<Option> options = question.getOptions();
+            Set<String> uniqueOptionTitle = new HashSet<>();
+            Set<Long> uniqueOptionId = new HashSet<>();
+
+            if(!isQuestionIdExist(questionId)){
+                throw new IllegalArgumentException("Question id does not exists.");
+            }
+            if (options.size() <= ANSWER_OPTION_AMOUNT) {
+                for (Option option : options) {
+                    String optionTitle = option.getOptionTitle();
+                    Long optionId = option.getOptionId();
+
+                    if (!uniqueOptionTitle.add(optionTitle) || !uniqueOptionId.add(optionId)) {
+                        throw new IllegalArgumentException("Duplicate options: " + optionTitle + ".");
+                    }
+                    if (questionRepository.getOptionByQuestionIdAndOptionId(questionId, optionId) == null) {
+                        throw new IllegalArgumentException("Invalid option id.");
+                    }
+                    if (questionRepository.isOptionExists(optionTitle)) {
+                        throw new IllegalArgumentException("Option already exist in question.");
+                    }
+                }
+            } else {
+                throw new IllegalArgumentException("Invalid option amount.");
+            }
+            return true;
+        } catch (IllegalArgumentException e) {
+            throw e;
+        }
+    }
+
+    @Override
+    public Question setQuestionFromQuestionResponse(List<QuestionResponse> questionResponseList) {
+        ArrayList<Option> options = new ArrayList<>();
+
+        Long questionResponseId = null;
+        String questionResponseTitle = null;
+
+        for (QuestionResponse response : questionResponseList){
+            questionResponseId = response.getQuestionId();
+            questionResponseTitle = response.getQuestionTitle();
+
+            Option option = response.getOption();
+            options.add(option);
+        }
+
+        return new Question(questionResponseId, questionResponseTitle, options);
     }
 
 
@@ -161,64 +247,14 @@ public class QuestionServiceImpl implements QuestionService {
         return questionRepository.getQuestionIdByOptionId(optionId);
     }
 
-    @Override
-    public Question tryNewQuestionMap(Long questionId) {
-
-        List<QuestionTry> questionTries = questionRepository.tryNewQuestionMap(questionId);
-        ArrayList<Option> options = new ArrayList<>();
-
-        Long questionTryId = null;
-        String questionTryTitle = null;
-
-        for (QuestionTry questionTry : questionTries){
-            questionTryId = questionTry.getQuestionId();
-            questionTryTitle = questionTry.getQuestionTitle();
-
-            Option option = questionTry.getOption();
-            options.add(option);
+    public Boolean isQuestionIdExist(Long questionId){
+        if(questionRepository.isQuestionIdExist(questionId) !=0 ){
+            return true;
+        } else {
+            return false;
         }
-
-        return new Question(questionTryId, questionTryTitle, options);
     }
 
-    @Override
-    public List<Question> tryNewQuestionMapAll() {
-        List<QuestionTry> questionTries = questionRepository.tryNewQuestionMapAll();
-        List<Question> questions = new ArrayList<>();
-        ArrayList<Option> options = new ArrayList<>();
-
-        Long previousQuestionTryId = null;
-        Long questionTryId = null;
-        String questionTryTitle = null;
-
-        for (QuestionTry questionTry : questionTries) {
-            if (questionTryId == null) {
-                questionTryId = questionTry.getQuestionId();
-                questionTryTitle = questionTry.getQuestionTitle();
-                previousQuestionTryId = questionTry.getQuestionId();
-            }
-            if (questionTry.getQuestionId().equals(previousQuestionTryId)) {
-                Option option = questionTry.getOption();
-                options.add(option);
-            } else {
-                if (questionTryId != null) {
-                    Question question = new Question(questionTryId, questionTryTitle, new ArrayList<>(options));
-                    questions.add(question);
-                }
-                questionTryId = questionTry.getQuestionId();
-                questionTryTitle = questionTry.getQuestionTitle();
-                options.clear();
-                Option option = questionTry.getOption();
-                options.add(option);
-            }
-            previousQuestionTryId = questionTry.getQuestionId();
-        }
-        if (questionTryId != null) {
-            Question question = new Question(questionTryId, questionTryTitle, new ArrayList<>(options));
-            questions.add(question);
-        }
-        return questions;
-    }
 }
 
 

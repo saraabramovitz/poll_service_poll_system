@@ -1,19 +1,19 @@
 package com.pollServicePollSystem.model;
 
-public class Option {
+public class OptionCount {
     private Long optionId;
     private String optionTitle;
     private OptionType optionType;
+    private Long optionCount;
 
-    public Option(){}
+    public OptionCount(){}
 
-    public Option(Long optionId, String optionTitle, OptionType optionType) {
+    public OptionCount(Long optionId, String optionTitle, OptionType optionType, Long optionCount) {
         this.optionId = optionId;
         this.optionTitle = optionTitle;
         this.optionType = optionType;
+        this.optionCount = optionCount;
     }
-
-
 
     public Long getOptionId() {
         return optionId;
@@ -27,6 +27,10 @@ public class Option {
         return optionType;
     }
 
+    public Long getOptionCount() {
+        return optionCount;
+    }
+
     public void setOptionId(Long optionId) {
         this.optionId = optionId;
     }
@@ -38,4 +42,9 @@ public class Option {
     public void setOptionType(OptionType optionType) {
         this.optionType = optionType;
     }
+
+    public void setOptionCount(Long optionCount) {
+        this.optionCount = optionCount;
+    }
+
 }

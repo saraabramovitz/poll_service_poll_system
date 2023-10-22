@@ -13,8 +13,8 @@ public class OptionMapper implements RowMapper<Option> {
     @Override
     public Option mapRow(ResultSet rs, int rowNum) throws SQLException {
         Option option = new Option(
-                rs.getLong("answer_option_id"),
-                rs.getString("answer_option_title"),
+                rs.getLong("option_id"),
+                rs.getString("option_title"),
                 OptionType.valueOf(rs.getString("option_type"))
         );
         return option;

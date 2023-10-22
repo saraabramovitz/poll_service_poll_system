@@ -3,21 +3,19 @@ package com.pollServicePollSystem.repository;
 import com.pollServicePollSystem.model.*;
 import com.pollServicePollSystem.repository.mapper.OptionMapper;
 import com.pollServicePollSystem.repository.mapper.QuestionMapper;
-import com.pollServicePollSystem.repository.mapper.TryNewMap;
-import com.pollServicePollSystem.repository.mapper.UserOptionResponseMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import com.pollServicePollSystem.model.Option;
-import java.util.ArrayList;
+
 import java.util.List;
 
 @Repository
 public class QuestionRepositoryImpl implements QuestionRepository{
 
     public static final String QUESTION_TABLE_NAME = "question";
-    public static final String ANSWER_OPTION_TABLE_NAME = "answer_option";
+    public static final String OPTION_TABLE_NAME = "option";
 
     @Autowired
     JdbcTemplate jdbcTemplate;
@@ -26,9 +24,6 @@ public class QuestionRepositoryImpl implements QuestionRepository{
     @Autowired
     OptionMapper optionMapper;
 
-    @Autowired
-    TryNewMap tryNewMap;
-
 
     @Override
     public void createQuestion (Question question) {
@@ -36,86 +31,98 @@ public class QuestionRepositoryImpl implements QuestionRepository{
         jdbcTemplate.update(sqlQuestion, question.getQuestionTitle());
         Long lostCreatedQuestionId = jdbcTemplate.queryForObject("SELECT LAST_INSERT_ID()", Long.class);
 
-        ArrayList<Option> answerOptionsArray = question.getAnswerOptions();
-        String sql = "insert into  "+ ANSWER_OPTION_TABLE_NAME + " (question_id, option_type, answer_option_title) values (?, ?, ?)";
-        jdbcTemplate.batchUpdate(sql, new OptionBatchPreparedStatementSetter(answerOptionsArray, lostCreatedQuestionId));
+        List<Option> options = question.getOptions();
+        for (int i = 0; i < options.size(); i++) {
+            OptionType optionType = OptionType.values()[i];
+            String optionSql = "INSERT INTO  "+ OPTION_TABLE_NAME + " (option_title, option_type, question_id) values (?, ?, ?)";
+            jdbcTemplate.update(optionSql, options.get(i).getOptionTitle() ,optionType.name(), lostCreatedQuestionId);
+        }
     }
 
     @Override
     public void updateQuestion(Question question) {
+        String sqlQuestion = "UPDATE " + QUESTION_TABLE_NAME + " SET question_title = ? WHERE question_id = ?";
+        jdbcTemplate.update(sqlQuestion, question.getQuestionTitle(), question.getQuestionId());
+
+        List<Option> options = question.getOptions();
+        for (Option option : options) {
+            String optionSql = "UPDATE " + OPTION_TABLE_NAME +
+                    " SET option_title = ? WHERE question_id = ? AND option_id = ?";
+            jdbcTemplate.update(optionSql, option.getOptionTitle(), question.getQuestionId(), option.getOptionId());
+        }
+    }
+
+    @Override
+    public void updateQuestionTitle(Question question) {
         String sql = "UPDATE " + QUESTION_TABLE_NAME + " SET question_title = ? WHERE question_id = ?";
         jdbcTemplate.update(sql, question.getQuestionTitle(), question.getQuestionId());
-
-        ArrayList<Option> answerOptionsArray = question.getAnswerOptions();
-        for (Option option : answerOptionsArray) {
-            String updateOptionSql = "UPDATE " + ANSWER_OPTION_TABLE_NAME +
-                    " SET answer_option_title = ? WHERE question_id = ? AND answer_option_id = ?";
-            jdbcTemplate.update(updateOptionSql, option.getOptionTitle(), question.getQuestionId(), option.getOptionId());
-        }
     }
 
     @Override
-    public void updateQuestionTitle(QuestionTitle questionTitleImpl) {
-        String sql = "UPDATE " + QUESTION_TABLE_NAME + " SET question_title = ? WHERE question_id = ?";
-        jdbcTemplate.update(sql, questionTitleImpl.getQuestionTitle(), questionTitleImpl.getQuestionId());
-    }
-
-    @Override
-    public void updateQuestionOptions(QuestionAble questionOption) {
-        ArrayList<Option> answerOptionsArray = questionOption.getAnswerOptions();
-        for (Option option : answerOptionsArray) {
-            String updateOptionSql = "UPDATE " + ANSWER_OPTION_TABLE_NAME +
-                    " SET answer_option_title = ? WHERE question_id = ? AND answer_option_id = ?";
-            jdbcTemplate.update(updateOptionSql, option.getOptionTitle(), questionOption.getQuestionId(), option.getOptionId());
+    public void updateQuestionOptions(Question question) {
+        List<Option> options = question.getOptions();
+        for (Option option : options) {
+            String optionSql = "UPDATE " + OPTION_TABLE_NAME +
+                    " SET option_title = ? WHERE question_id = ? AND option_id = ?";
+            jdbcTemplate.update(optionSql, option.getOptionTitle(), question.getQuestionId(), option.getOptionId());
         }
     }
-
 
     @Override
     public void deleteQuestionById(Long questionId) {
-        String deleteQuestionOptionSql = "DELETE FROM " + ANSWER_OPTION_TABLE_NAME + " WHERE question_id=?";
-        jdbcTemplate.update(deleteQuestionOptionSql, questionId);
+        String sqlOptions = "DELETE FROM " + OPTION_TABLE_NAME + " WHERE question_id=?";
+        jdbcTemplate.update(sqlOptions, questionId);
 
-        String deleteQuestionSql = "DELETE FROM " + QUESTION_TABLE_NAME + " WHERE question_id=?";
-        jdbcTemplate.update(deleteQuestionSql, questionId);
+        String sqlQuestion = "DELETE FROM " + QUESTION_TABLE_NAME + " WHERE question_id=?";
+        jdbcTemplate.update(sqlQuestion, questionId);
     }
 
-
     @Override
-    public Question getQuestionById(Long questionId) {
+    public List<QuestionResponse> getQuestionById(Long questionId) {
         String sql = "SELECT * FROM " + QUESTION_TABLE_NAME +
-                " JOIN " + ANSWER_OPTION_TABLE_NAME +
-                " ON answer_option.question_id = question.question_id " +
-                " WHERE question.question_id = ?";
+             " JOIN " + OPTION_TABLE_NAME +
+             " ON option.question_id = question.question_id" +
+             " WHERE question.question_id = ?";
         try {
-            return jdbcTemplate.queryForObject(sql, questionMapper, questionId);
+            return jdbcTemplate.query(sql, questionMapper, questionId);
         } catch (EmptyResultDataAccessException e) {
             return null;
         }
     }
 
     @Override
-    public List<Question> getAllPollQuestions() {
-        String sql = "SELECT question.question_id, question.question_title, " +
-                "answer_option.answer_option_id, answer_option.answer_option_title, answer_option.option_type " +
-                "FROM " + QUESTION_TABLE_NAME +
-                " JOIN " + ANSWER_OPTION_TABLE_NAME +
-                " ON answer_option.question_id = question.question_id";
+    public List<QuestionResponse> getAllQuestions() {
+        String sql = "SELECT * FROM " + QUESTION_TABLE_NAME +
+            " JOIN " + OPTION_TABLE_NAME +
+            " ON option.question_id = question.question_id";
+        try {
+            return jdbcTemplate.query(sql, questionMapper);
+        } catch (EmptyResultDataAccessException e) {
+            return null;
+        }
+    }
 
-        return jdbcTemplate.query(sql, questionMapper);
+    @Override
+    public Long isQuestionIdExist(Long questionId) {
+        String sql = "SELECT COUNT(*) FROM " + QUESTION_TABLE_NAME +
+            " WHERE question.question_id = ?";
+        try {
+            return jdbcTemplate.queryForObject(sql, Long.class, questionId);
+        } catch (EmptyResultDataAccessException e) {
+            return null;
+        }
+
     }
 
 
-
-
     @Override
-    public Question getQuestionByQuestionTitle(String questionTitle) {
+    public List<QuestionResponse> getQuestionByQuestionTitle(String questionTitle) {
         String sql = "SELECT * FROM " + QUESTION_TABLE_NAME +
-                " JOIN " + ANSWER_OPTION_TABLE_NAME +
-                " ON answer_option.question_id = question.question_id " +
-                " WHERE question.question_title = ?";
+            " JOIN " + OPTION_TABLE_NAME +
+            " ON option.question_id = question.question_id " +
+            " WHERE question.question_title = ?";
         try {
-            return jdbcTemplate.queryForObject(sql, questionMapper, questionTitle);
+           return jdbcTemplate.query(sql, questionMapper, questionTitle);
         } catch (EmptyResultDataAccessException e) {
             return null;
         }
@@ -134,8 +141,8 @@ public class QuestionRepositoryImpl implements QuestionRepository{
 
     @Override
     public Option getOptionByQuestionIdAndOptionId(Long questionId, Long optionId) {
-        String sql = "SELECT * FROM " + ANSWER_OPTION_TABLE_NAME +
-                " WHERE answer_option_id = ? AND question_id = ?";
+        String sql = "SELECT * FROM " + OPTION_TABLE_NAME +
+            " WHERE option_id = ? AND question_id = ?";
         try {
             return jdbcTemplate.queryForObject(sql, optionMapper, optionId, questionId);
         } catch (EmptyResultDataAccessException e) {
@@ -144,7 +151,7 @@ public class QuestionRepositoryImpl implements QuestionRepository{
     }
     @Override
     public boolean isOptionExists(String optionTitle) {
-        String sql = "SELECT COUNT(*) FROM " + ANSWER_OPTION_TABLE_NAME + " WHERE answer_option_title = ?";
+        String sql = "SELECT COUNT(*) FROM " + OPTION_TABLE_NAME + " WHERE option_title = ?";
         int count = jdbcTemplate.queryForObject(sql, Integer.class, optionTitle);
         return count > 0;
     }
@@ -152,9 +159,9 @@ public class QuestionRepositoryImpl implements QuestionRepository{
     @Override
     public Long getQuestionIdByOptionId(Long optionId) {
         String sql = "SELECT question.question_id " +
-                "FROM question " +
-                "JOIN answer_option ON answer_option.question_id = question.question_id " +
-                "WHERE answer_option.answer_option_id = ?";
+        "FROM question " +
+        "JOIN option ON option.question_id = question.question_id " +
+        "WHERE option.option_id = ?";
         try {
             return jdbcTemplate.queryForObject(sql, Long.class, optionId);
         } catch (EmptyResultDataAccessException e) {
@@ -162,33 +169,6 @@ public class QuestionRepositoryImpl implements QuestionRepository{
         }
     }
 
-    @Override
-    public List<QuestionTry> tryNewQuestionMap(Long questionId) {
-        String sql = "SELECT * FROM " + QUESTION_TABLE_NAME +
-                " JOIN " + ANSWER_OPTION_TABLE_NAME +
-                " ON answer_option.question_id = question.question_id " +
-                " WHERE question.question_id = ?";
-        try {
-            return jdbcTemplate.query(sql, tryNewMap, questionId);
-        } catch (EmptyResultDataAccessException e) {
-            return null;
-        }
-
-    }
-
-    @Override
-    public List<QuestionTry> tryNewQuestionMapAll() {
-        String sql = "SELECT * FROM " + QUESTION_TABLE_NAME +
-                " JOIN " + ANSWER_OPTION_TABLE_NAME +
-                " ON answer_option.question_id = question.question_id ";
-        try {
-            return jdbcTemplate.query(sql, tryNewMap);
-        } catch (EmptyResultDataAccessException e) {
-            return null;
-        }
-
-
-    }
 
 
 }

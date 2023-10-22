@@ -2,24 +2,26 @@ package com.pollServicePollSystem.service;
 
 import com.pollServicePollSystem.model.*;
 
-import java.util.ArrayList;
+
 import java.util.List;
 
 public interface QuestionService {
     void createQuestion (Question question);
     void updateQuestion (Question question);
-    void updateQuestionTitle(QuestionTitle questionTitle);
-    void updateQuestionOptions(QuestionOption questionOption);
+    void updateQuestionTitle(Question question);
+    void updateQuestionOptions(Question question);
     void deleteQuestionById (Long questionId);
-    Question getQuestionById (Long questionId);
-    List<Question> getAllPollQuestions();
-    boolean isValidQuestion(Long questionId, String questionTitle);
-    boolean isValidQuestionForUpdate(Long questionId, String questionTitle);
-    boolean isValidOptionsForCreate(ArrayList<Option> optionsArray);
-    boolean isValidOptionsForUpdate(Long questionId, ArrayList<Option> optionsArray);
+    Question getQuestionById(Long questionId);
+    List<Question> getAllQuestions();
+    Question getQuestionByQuestionTitle(String questionTitle);
+    boolean isQuestionValidForCreate(Question question);
+    boolean isQuestionValidForUpdate(Question question);
+    boolean isOptionsValidForCreate(List<Option> optionsArray);
+    boolean isOptionsValidForUpdate(Question question);
+    Question setQuestionFromQuestionResponse(List<QuestionResponse> questionResponseList);
     Option getOptionByQuestionIdAndOptionId (Long questionId, Long optionId);
     Long getQuestionIdByOptionId(Long optionId);
-    Question tryNewQuestionMap(Long questionId);
-    List<Question> tryNewQuestionMapAll();
+    Boolean isQuestionIdExist(Long questionId);
+
 
 }

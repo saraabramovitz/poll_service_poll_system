@@ -1,16 +1,14 @@
 package com.pollServicePollSystem.model;
 
-public class UserAnswerResponse {
+public class AnswerCount {
     private Long questionId;
     private String questionTitle;
-    private Option option;
+    private Long answerCount;
 
-    public UserAnswerResponse(){}
-
-    public UserAnswerResponse(Long questionId, String questionTitle, Option option) {
+    public AnswerCount(Long questionId, String questionTitle, Long answerCount) {
         this.questionId = questionId;
         this.questionTitle = questionTitle;
-        this.option = option;
+        this.answerCount = answerCount;
     }
 
     public Long getQuestionId() {
@@ -21,8 +19,8 @@ public class UserAnswerResponse {
         return questionTitle;
     }
 
-    public Option getOption() {
-        return option;
+    public Long getAnswerCount() {
+        return answerCount;
     }
 
     public void setQuestionId(Long questionId) {
@@ -33,7 +31,7 @@ public class UserAnswerResponse {
         this.questionTitle = questionTitle;
     }
 
-    public void setOption(Option option) {
-        this.option = option;
+    public void setAnswerCount(Long questionCount) {
+        this.answerCount = questionCount;
     }
 }

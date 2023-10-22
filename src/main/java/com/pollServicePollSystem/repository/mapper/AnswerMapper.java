@@ -14,7 +14,7 @@ public class AnswerMapper implements RowMapper<UserAnswer> {
     public UserAnswer mapRow(ResultSet rs, int rowNum) throws SQLException {
         UserAnswer userAnswer = new UserAnswer(
         rs.getLong("question_id"),
-        rs.getLong("answer_option_id"));
+        rs.getLong("option_id"));
         return  userAnswer;
 
     }

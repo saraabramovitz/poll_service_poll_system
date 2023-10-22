@@ -1,15 +1,14 @@
 package com.pollServicePollSystem.model;
 
-public class QuestionTry {
+public class QuestionResponse {
     private Long questionId;
     private String questionTitle;
     private Option option;
 
-
-    public QuestionTry() {
+    public QuestionResponse() {
     }
 
-    public QuestionTry(Long questionId, String questionTitle, Option option) {
+    public QuestionResponse(Long questionId, String questionTitle, Option option) {
         this.questionId = questionId;
         this.questionTitle = questionTitle;
         this.option = option;
