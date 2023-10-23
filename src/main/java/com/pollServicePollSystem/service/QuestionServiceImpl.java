@@ -19,80 +19,57 @@ public class QuestionServiceImpl implements QuestionService {
 
     @Override
     public void createQuestion(Question question) {
-        try {
-            List<Option> options = question.getOptions();
-            if (isQuestionValidForCreate(question)) {
-                if (isOptionsValidForCreate(options)) {
-                questionRepository.createQuestion(question); }
+        List<Option> options = question.getOptions();
+        if (isQuestionValidForCreate(question)) {
+            if (isOptionsValidForCreate(options)) {
+                questionRepository.createQuestion(question);
             }
-        } catch (IllegalArgumentException e) {
-            throw e;
         }
     }
 
     @Override
     public void updateQuestion(Question question) {
-        try {
-            if(isQuestionValidForUpdate(question)){
-                if (isOptionsValidForUpdate(question)) {
-                    questionRepository.updateQuestion(question);
-                }
+        if(isQuestionValidForUpdate(question)){
+            if (isOptionsValidForUpdate(question)) {
+                questionRepository.updateQuestion(question);
             }
-        } catch (IllegalArgumentException e) {
-            throw e;
         }
     }
 
     @Override
     public void updateQuestionTitle(Question question) {
-        try {
-            if(isQuestionValidForUpdate(question)){
-                questionRepository.updateQuestionTitle(question);
-            }
-        } catch(IllegalArgumentException e){
-            throw e;
+        if(isQuestionValidForUpdate(question)) {
+            questionRepository.updateQuestionTitle(question);
         }
     }
 
 
     @Override
     public void updateQuestionOptions(Question question) {
-        try {
-            if(isOptionsValidForUpdate(question)){
-                questionRepository.updateQuestionOptions(question);
-            }
-        } catch (IllegalArgumentException e){
-            throw e;
+        if(isOptionsValidForUpdate(question)){
+            questionRepository.updateQuestionOptions(question);
         }
     }
 
     @Override
     public void deleteQuestionById(Long questionId) {
-        try {
-            if (isQuestionIdExist(questionId)){
-                answerService.deletePollAnswersByQuestionId(questionId);
-                questionRepository.deleteQuestionById(questionId);
-            } else {
-                throw new IllegalArgumentException("The question with id " + questionId + " does not exist.");
-         }
-        } catch (IllegalArgumentException e){
-            throw e;
+        if (isQuestionIdExist(questionId)){
+            answerService.deletePollAnswersByQuestionId(questionId);
+            questionRepository.deleteQuestionById(questionId);
+        } else {
+            throw new IllegalArgumentException("The question with id " + questionId + " does not exist.");
         }
     }
 
 
     @Override
     public Question getQuestionById(Long questionId) {
-        try {
-            if (isQuestionIdExist(questionId)){
-                List<QuestionResponse> questionResponseList = questionRepository.getQuestionById(questionId);
-                Question question = setQuestionFromQuestionResponse(questionResponseList);
-                return question;
-            } else {
-                throw new IllegalArgumentException("The question with id " + questionId + " does not exist.");
-            }
-        } catch (IllegalArgumentException e){
-            throw e;
+        if (isQuestionIdExist(questionId)){
+            List<QuestionResponse> questionResponseList = questionRepository.getQuestionById(questionId);
+            Question question = setQuestionFromQuestionResponse(questionResponseList);
+            return question;
+        } else {
+            throw new IllegalArgumentException("The question with id " + questionId + " does not exist.");
         }
     }
 
@@ -185,37 +162,33 @@ public class QuestionServiceImpl implements QuestionService {
 
     @Override
     public boolean isOptionsValidForUpdate(Question question){
-        try {
-            Long questionId = question.getQuestionId();
-            List<Option> options = question.getOptions();
-            Set<String> uniqueOptionTitle = new HashSet<>();
-            Set<Long> uniqueOptionId = new HashSet<>();
+        Long questionId = question.getQuestionId();
+        List<Option> options = question.getOptions();
+        Set<String> uniqueOptionTitle = new HashSet<>();
+        Set<Long> uniqueOptionId = new HashSet<>();
 
-            if(!isQuestionIdExist(questionId)){
-                throw new IllegalArgumentException("Question id does not exists.");
-            }
-            if (options.size() <= ANSWER_OPTION_AMOUNT) {
-                for (Option option : options) {
-                    String optionTitle = option.getOptionTitle();
-                    Long optionId = option.getOptionId();
-
-                    if (!uniqueOptionTitle.add(optionTitle) || !uniqueOptionId.add(optionId)) {
-                        throw new IllegalArgumentException("Duplicate options: " + optionTitle + ".");
-                    }
-                    if (questionRepository.getOptionByQuestionIdAndOptionId(questionId, optionId) == null) {
-                        throw new IllegalArgumentException("Invalid option id.");
-                    }
-                    if (questionRepository.isOptionExists(optionTitle)) {
-                        throw new IllegalArgumentException("Option already exist in question.");
-                    }
-                }
-            } else {
-                throw new IllegalArgumentException("Invalid option amount.");
-            }
-            return true;
-        } catch (IllegalArgumentException e) {
-            throw e;
+        if(!isQuestionIdExist(questionId)){
+            throw new IllegalArgumentException("Question id does not exists.");
         }
+        if (options.size() <= ANSWER_OPTION_AMOUNT) {
+            for (Option option : options) {
+                String optionTitle = option.getOptionTitle();
+                Long optionId = option.getOptionId();
+
+                if (!uniqueOptionTitle.add(optionTitle) || !uniqueOptionId.add(optionId)) {
+                    throw new IllegalArgumentException("Duplicate options: " + optionTitle + ".");
+                }
+                if (questionRepository.getOptionByQuestionIdAndOptionId(questionId, optionId) == null) {
+                    throw new IllegalArgumentException("Invalid option id.");
+                }
+                if (questionRepository.isOptionExists(optionTitle)) {
+                    throw new IllegalArgumentException("Option already exist in question.");
+                }
+            }
+        } else {
+            throw new IllegalArgumentException("Invalid option amount.");
+        }
+        return true;
     }
 
     @Override
