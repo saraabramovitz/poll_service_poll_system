@@ -25,21 +25,17 @@ public class AnswerServiceImpl implements AnswerService {
 
     @Override
     public void savePollAnswer(UserPollAnswer userPollAnswer) {
-        try {
-            Long userId = userPollAnswer.getUserId();
-            List<UserAnswer> userAnswers = userPollAnswer.getUserAnswers();
-            if (isPollAvailableForUser(userPollAnswer)) {
-                for (UserAnswer userAnswer : userAnswers) {
-                    if (isAnswerValid(userAnswer, userId)) {
-                        if (answerRepository.getUserAnswersByUserId(userId, userAnswer) == null) {
-                            answerRepository.savePollAnswer(userId, userAnswer);
-                        } else {
-                            answerRepository.updateUserPollAnswer(userId, userAnswer);}
-                    }
+        Long userId = userPollAnswer.getUserId();
+        List<UserAnswer> userAnswers = userPollAnswer.getUserAnswers();
+        if (isPollAvailableForUser(userPollAnswer)) {
+            for (UserAnswer userAnswer : userAnswers) {
+                if (isAnswerValid(userAnswer, userId)) {
+                    if (answerRepository.getUserAnswersByUserId(userId, userAnswer) == null) {
+                        answerRepository.savePollAnswer(userId, userAnswer);
+                    } else {
+                        answerRepository.updateUserPollAnswer(userId, userAnswer);}
                 }
             }
-        } catch(IllegalArgumentException e){
-            throw e;
         }
     }
 
@@ -51,14 +47,10 @@ public class AnswerServiceImpl implements AnswerService {
 
     @Override
     public void deletePollAnswersByQuestionId(Long questionId) {
-        try {
-            if(questionService.getQuestionById(questionId) != null){
-                answerRepository.deletePollAnswersByQuestionId(questionId);
-            } else {
-                throw new IllegalArgumentException("Question does not exist.");
-            }
-        } catch (IllegalArgumentException e) {
-            throw e;
+        if(questionService.getQuestionById(questionId) != null){
+            answerRepository.deletePollAnswersByQuestionId(questionId);
+        } else {
+            throw new IllegalArgumentException("Question does not exist.");
         }
     }
 
@@ -85,18 +77,12 @@ public class AnswerServiceImpl implements AnswerService {
     }
 
 
-
-
     @Override
     public AnswerCount getAnswerCountByQuestionId(Long questionId) {
-        try {
-            if(questionService.getQuestionById(questionId) != null){
-                return answerRepository.getAnswerCountByQuestionId(questionId);
-            } else {
-                throw new IllegalArgumentException("Question does not exist.");
-            }
-        } catch (IllegalArgumentException e) {
-            throw e;
+        if(questionService.getQuestionById(questionId) != null){
+            return answerRepository.getAnswerCountByQuestionId(questionId);
+        } else {
+            throw new IllegalArgumentException("Question does not exist.");
         }
     }
 
@@ -107,26 +93,22 @@ public class AnswerServiceImpl implements AnswerService {
 
     @Override
     public AnswerSummary getAnswerSummaryByQuestionId(Long questionId) {
-        try {
-            List<AnswerSummaryResponse> answerSummaryResponseList = answerRepository.getAnswerSummaryByQuestionId(questionId);
-            List<OptionCount> optionCountList = new ArrayList<>();
-            Long answerResponseId = null;
-            String answerResponseTitle = null;
+        List<AnswerSummaryResponse> answerSummaryResponseList = answerRepository.getAnswerSummaryByQuestionId(questionId);
+        List<OptionCount> optionCountList = new ArrayList<>();
+        Long answerResponseId = null;
+        String answerResponseTitle = null;
 
-            if(answerSummaryResponseList.size() != 0){
-                for (AnswerSummaryResponse response : answerSummaryResponseList){
-                    answerResponseId = response.getQuestionId();
-                    answerResponseTitle = response.getQuestionTitle();
-                    OptionCount optionCount = response.getOptionCount();
-                    optionCountList.add(optionCount);
-                }
-
-                return new AnswerSummary(answerResponseId, answerResponseTitle, optionCountList);
-            } else {
-                throw new IllegalArgumentException("Question does not exist.");
+        if(answerSummaryResponseList.size() != 0){
+            for (AnswerSummaryResponse response : answerSummaryResponseList){
+                answerResponseId = response.getQuestionId();
+                answerResponseTitle = response.getQuestionTitle();
+                OptionCount optionCount = response.getOptionCount();
+                optionCountList.add(optionCount);
             }
-        } catch (IllegalArgumentException e) {
-            throw e;
+
+            return new AnswerSummary(answerResponseId, answerResponseTitle, optionCountList);
+        } else {
+            throw new IllegalArgumentException("Question does not exist.");
         }
     }
 
@@ -163,25 +145,21 @@ public class AnswerServiceImpl implements AnswerService {
 
     @Override
     public UserAnswerCount getUserAnswerCountById(Long userId) {
-        try {
-            if(userService.getUserById(userId) != null){
-                UserAnswerCountResponse response = answerRepository.getUserAnswerCountById(userId);
-                if(response != null){
-                    Long currentUserId = response.getUserId();
-                    Long currentUserAnswerCount = response.getUserAnswerCount();
-                    UserResponse currentUser = userService.getUserById(currentUserId);
+        if(userService.getUserById(userId) != null){
+            UserAnswerCountResponse response = answerRepository.getUserAnswerCountById(userId);
+            if(response != null){
+                Long currentUserId = response.getUserId();
+                Long currentUserAnswerCount = response.getUserAnswerCount();
+                UserResponse currentUser = userService.getUserById(currentUserId);
 
-                    UserAnswerCount userAnswerCount = new UserAnswerCount(currentUser, currentUserAnswerCount);
-                    return userAnswerCount;
-                } else {
-                    throw new IllegalArgumentException("No answers found for user.");
-                }
-
+                UserAnswerCount userAnswerCount = new UserAnswerCount(currentUser, currentUserAnswerCount);
+                return userAnswerCount;
             } else {
-                throw new IllegalArgumentException("User does not exist.");
+                throw new IllegalArgumentException("No answers found for user.");
             }
-        }  catch (IllegalArgumentException e) {
-            throw e;
+
+        } else {
+            throw new IllegalArgumentException("User does not exist.");
         }
     }
 
@@ -208,7 +186,6 @@ public class AnswerServiceImpl implements AnswerService {
 
     @Override
     public Boolean isAnswerValid(UserAnswer userAnswer, Long userId){
-        try {
             Long questionId = userAnswer.getQuestionId();
             Long optionId = userAnswer.getOptionId();
 
@@ -218,9 +195,6 @@ public class AnswerServiceImpl implements AnswerService {
             if(questionService.getOptionByQuestionIdAndOptionId(questionId, optionId) == null){
                 throw new IllegalArgumentException("Option id " + optionId + " is not valid for question id " + questionId + ".");
             }
-        }  catch (IllegalArgumentException e) {
-            throw e;
-        }
         return true;
     }
 
